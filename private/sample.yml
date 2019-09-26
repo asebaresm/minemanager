@@ -1,0 +1,12 @@
+credentials:
+  token: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+mod:
+  email_whitelist:
+  - user1@domain.com
+  - user2@domain.com
+  - user3@domain.com
+  - user4@domain.com
+  - user5@domain.com
+  users:
+    '21112642': user1@domain.com
+    '11112649': user2@domain.com
