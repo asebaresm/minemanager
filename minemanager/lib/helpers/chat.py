@@ -34,7 +34,7 @@ HELP_GLOBAL    = "Available CLI commands:\n"\
                  "/list            - List mapped hosts\n"\
                  "/ping <host>     - ping a host to check for its status\n"\
                  "/pingsweep       - ping every host from list\n"\
-                 "/reboot <host>   - Reboot the host machine\n"\
+                 "/restart <host>   - Reboot the host machine\n"\
                  "/start           - \n"\
                  "/signup <correo> - signup with mail\n"\
 

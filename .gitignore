@@ -20,7 +20,10 @@ private/private.yml
 
 __pycache__
 lib/__pycache__
+lib/helpers/*.pyc
+
 lib/helpers/__pycache__
 lib/mod/__pycache__
 
-
+lib/raspi/__pycache__
+lib/raspi/*.pyc

@@ -8,6 +8,12 @@ CONFIG_FILE    = os.path.join(ROOT, 'config', 'config.yml')
 PRIVATE_FILE   = os.path.join(ROOT, 'private', 'private.yml')
 BACK_UPS       = os.path.join(ROOT, 'bak')
 
-# load configs
-#SUPPORT        = load_yaml(CONFIG_FILE)['bot_info']['support']
-#PROJECTS       = load_yaml(PRIVATE_FILE)['company']['projects']
+# Some general cons
+
+NMAP_UP, NMAP_DOWN, NMAP_UNKN = range(3)
+
+nmap_status = {
+                NMAP_UP : 'UP',
+                NMAP_DOWN: 'DOWN',
+                NMAP_UNKN: 'UNKN'
+              }

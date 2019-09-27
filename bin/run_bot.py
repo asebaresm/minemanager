@@ -1,8 +1,10 @@
 
 from minemanager import definitions
 from minemanager.lib.helpers import chat
+from minemanager.lib.helpers import checks
 from minemanager.lib.helpers.aux import load_yaml
 from minemanager.lib.mod.users import register_user, active_user
+from minemanager.lib.raspi import relayboard
 
 from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove)
 from telegram.ext import Updater, InlineQueryHandler, CommandHandler
@@ -26,6 +28,7 @@ class MineBot(object):
         self.config = load_yaml(config_name)
         self.credentials = load_yaml(credentials_name)
         self.logger = logging.getLogger(__name__)
+        self.relayboard = relayboard.RelayBoard()
 
     def start(self, bot, update):
         uid = update.message.from_user.id
@@ -43,6 +46,15 @@ class MineBot(object):
         update.message.reply_text(chat.HELP_GLOBAL, reply_markup=ReplyKeyboardRemove())
         return None
 
+    def restart(self, bot, update, args):
+        self.logger.info('/reboot issued by "%s"', update.message.from_user.id)
+        txt = "\nRebooting %s..." % args[0]
+        update.message.reply_text(txt)
+        host_relay = checks.host_2_relay(args[0])
+        self.relayboard.powercycle(host_relay)
+        update.message.reply_text("\nDone")
+        return None
+
     def halt_handler(self, sig, frame):
         print("CTRL+C pressed., stopping %s" % self.config['bot_info']['name'])
         sys.exit(0)
@@ -56,8 +68,9 @@ def main():
     updater = Updater(token=minebot.credentials['credentials']['token'],user_sig_handler=minebot.halt_handler)
     dp = updater.dispatcher
 
-    dp.add_handler(CommandHandler("start", minebot.start))
     dp.add_handler(CommandHandler("help", minebot.help))
+    dp.add_handler(CommandHandler("restart", minebot.restart, pass_args=True))
+    dp.add_handler(CommandHandler("start", minebot.start))
     dp.add_error_handler(minebot.error)
 
     # Start the bot
