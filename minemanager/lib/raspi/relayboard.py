@@ -32,18 +32,24 @@ class RelayBoard:
         self.poweron(relay)
 
     def poweron(self, relay):
+        if GPIO.input(RELAYS[relay]['in']) == GPIO.HIGH:
+            return False
         # Press power and wait for PLED to go HIGH
         GPIO.output(RELAYS[relay]['out'], GPIO.LOW)
         while GPIO.input(RELAYS[relay]['in']) == GPIO.LOW:
             time.sleep(0.02)
         GPIO.output(RELAYS[relay]['out'], GPIO.HIGH)
+        return True
 
     def poweroff(self, relay):
+        if GPIO.input(RELAYS[relay]['in']) == GPIO.LOW:
+            return False
         # Press power and wait for PLED to go LOW
         GPIO.output(RELAYS[relay]['out'], GPIO.LOW)
         while GPIO.input(RELAYS[relay]['in']) == GPIO.HIGH:
             time.sleep(0.02)
         GPIO.output(RELAYS[relay]['out'], GPIO.HIGH)
+        return True
 
 def main():
     time.sleep(2)
