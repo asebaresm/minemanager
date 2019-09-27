@@ -55,6 +55,24 @@ class MineBot(object):
         update.message.reply_text("\nDone")
         return None
 
+    def poweron(self, bot, update, args):
+        self.logger.info('/poweron issued by "%s"', update.message.from_user.id)
+        txt = "\nPowering on %s..." % args[0]
+        update.message.reply_text(txt)
+        host_relay = checks.host_2_relay(args[0])
+        self.relayboard.poweron(host_relay)
+        update.message.reply_text("\nDone")
+        return None
+
+    def poweroff(self, bot, update, args):
+        self.logger.info('/poweroff issued by "%s"', update.message.from_user.id)
+        txt = "\nPowering off %s..." % args[0]
+        update.message.reply_text(txt)
+        host_relay = checks.host_2_relay(args[0])
+        self.relayboard.poweroff(host_relay)
+        update.message.reply_text("\nDone")
+        return None
+
     def halt_handler(self, sig, frame):
         print("CTRL+C pressed., stopping %s" % self.config['bot_info']['name'])
         sys.exit(0)
@@ -69,6 +87,8 @@ def main():
     dp = updater.dispatcher
 
     dp.add_handler(CommandHandler("help", minebot.help))
+    dp.add_handler(CommandHandler("poweroff", minebot.poweroff, pass_args=True))
+    dp.add_handler(CommandHandler("poweron", minebot.poweron, pass_args=True))
     dp.add_handler(CommandHandler("restart", minebot.restart, pass_args=True))
     dp.add_handler(CommandHandler("start", minebot.start))
     dp.add_error_handler(minebot.error)

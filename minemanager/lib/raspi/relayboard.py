@@ -24,21 +24,26 @@ class RelayBoard:
         GPIO.setup(IN_CHN_LIST, GPIO.IN)
 
     def powercycle(self, relay):
-        # Press power and wait for PLED to go LOW
-        GPIO.output(RELAYS[relay]['out'], GPIO.LOW)
-        while GPIO.input(RELAYS[relay]['in']) == GPIO.HIGH:
-            time.sleep(0.02)
-        GPIO.output(RELAYS[relay]['out'], GPIO.HIGH)
+        self.poweroff(relay)
 
         # wait 0.5s to end power-off
         time.sleep(3)
 
+        self.poweron(relay)
+
+    def poweron(self, relay):
         # Press power and wait for PLED to go HIGH
         GPIO.output(RELAYS[relay]['out'], GPIO.LOW)
         while GPIO.input(RELAYS[relay]['in']) == GPIO.LOW:
             time.sleep(0.02)
         GPIO.output(RELAYS[relay]['out'], GPIO.HIGH)
 
+    def poweroff(self, relay):
+        # Press power and wait for PLED to go LOW
+        GPIO.output(RELAYS[relay]['out'], GPIO.LOW)
+        while GPIO.input(RELAYS[relay]['in']) == GPIO.HIGH:
+            time.sleep(0.02)
+        GPIO.output(RELAYS[relay]['out'], GPIO.HIGH)
 
 def main():
     time.sleep(2)
