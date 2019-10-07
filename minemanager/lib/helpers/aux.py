@@ -72,6 +72,28 @@ def dump_user_data(user):
     with open(definitions.DATA_FILE, 'r') as f:
         return yaml.dump(yaml.safe_load(f)[user], default_flow_style=False)
 
+def host_relay(h):
+    hosts = load_hosts()
+    name = get_hostname(h)
+    if name is None:
+        return None, None # host not found, invalid host
+    return hosts[name]['relay'], hosts[name]['type']
+
+def get_hostname(name):
+    hosts = load_hosts()
+    if hosts.get(name):
+        return name
+    for host in hosts.keys():
+        if name == hosts[host]['ip']:
+            return host
+    return None
+
+def resolve_host(host):
+    hosts = load_hosts()
+    if does_match(host, definitions.VALIDATE_IP):
+        return host
+    return hosts.get(host, host)['ip']
+
 # Monkey-patch Python dict
 # Policy: a mutates. Contents of b are added to a and returns a
 def merge(a, b, path=None):

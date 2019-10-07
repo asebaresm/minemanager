@@ -5,6 +5,10 @@ import time
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
 
+# - 2 channels are allocated by default for each relay, input & output
+# - Usage of input channels is determined by the reboot policy: reset/sync
+# sync:  powercycles the host in a synchronous manner
+# reset: simply send reset signal to board panel
 IN_CHN_LIST  = [12, 11, 13, 16, 15, 18]
 OUT_CHN_LIST = [29, 32, 31, 33, 36, 37]
 
@@ -24,12 +28,13 @@ class RelayBoard:
         GPIO.setup(IN_CHN_LIST, GPIO.IN)
 
     def powercycle(self, relay):
-        self.poweroff(relay)
-
+        if not self.poweroff(relay):
+            return False
         # wait 0.5s to end power-off
         time.sleep(3)
-
-        self.poweron(relay)
+        if not self.poweron(relay):
+            return False
+        return True
 
     def poweron(self, relay):
         if GPIO.input(RELAYS[relay]['in']) == GPIO.HIGH:
@@ -37,7 +42,7 @@ class RelayBoard:
         # Press power and wait for PLED to go HIGH
         GPIO.output(RELAYS[relay]['out'], GPIO.LOW)
         while GPIO.input(RELAYS[relay]['in']) == GPIO.LOW:
-            time.sleep(0.02)
+            time.sleep(0.02) # 20ms
         GPIO.output(RELAYS[relay]['out'], GPIO.HIGH)
         return True
 
@@ -48,6 +53,16 @@ class RelayBoard:
         GPIO.output(RELAYS[relay]['out'], GPIO.LOW)
         while GPIO.input(RELAYS[relay]['in']) == GPIO.HIGH:
             time.sleep(0.02)
+        GPIO.output(RELAYS[relay]['out'], GPIO.HIGH)
+        return True
+
+    def reset(self, relay):
+        if GPIO.output(RELAYS[relay]['out'], GPIO.LOW):
+            return False
+        GPIO.output(RELAYS[relay]['out'], GPIO.LOW)
+        time.sleep(2)
+        if GPIO.output(RELAYS[relay]['out'], GPIO.HIGH):
+            return False
         GPIO.output(RELAYS[relay]['out'], GPIO.HIGH)
         return True
 
