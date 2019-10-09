@@ -25,6 +25,15 @@ NMAP_STATUS = {
                 NMAP_UNKN: 'UNKN 🌥'
               }
 
+# After getting NMAP_COUNT 3 consecutive checks, trigger restart of monitor
+NMAP_COUNT = 3
+
+# Monitors will check host status once every CHECK_INTERVAL seconds
+CHECK_INTERVAL = 180
+
+#Estimate of boot time for host (s)
+BOOT_TIME = 180
+
 VALIDATE_NMAP = re.compile(r"Nmap done: \d+ IP address (\(\d+ host(?:s)? up\)) scanned in \d+\.\d+ seconds")
 VALIDATE_IP   = re.compile(r"\d+\.\d+\.\d+\.\d+")
 IS_MINER      = re.compile(r"miner\d+")

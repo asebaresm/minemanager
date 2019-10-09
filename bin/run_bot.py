@@ -29,6 +29,7 @@ class MineBot(object):
         self.credentials = aux.load_yaml(credentials_name)
         self.logger = logging.getLogger(__name__)
         self.controller = controller.HostController()
+        self.god = aux.load_god()
 
     def start(self, bot, update):
         uid = update.message.from_user.id
@@ -49,12 +50,10 @@ class MineBot(object):
     def remine(self, bot, update):
         self.logger.info('/remine issued by "%s"', update.message.from_user.id)
         update.message.reply_text("\nRebooting all miners")
-        hosts = aux.load_hosts()
-        for host in hosts.keys():
-            if aux.does_match(host, definitions.IS_MINER):
-                reply = "\nRestarting %s..." % host
-                update.message.reply_text(reply)
-                self.controller.reboot(host)
+        for host in self.miner_list():
+            reply = "\nRestarting %s..." % host['name']
+            update.message.reply_text(reply)
+            self.controller.reboot(host['name'])
 
     def restart(self, bot, update, args):
         self.logger.info('/reboot issued by "%s"', update.message.from_user.id)
@@ -102,6 +101,50 @@ class MineBot(object):
         result = '\n{:20s} {:20s}'.format(host, definitions.NMAP_STATUS[checks.host_status(host)])
         update.message.reply_text(result)
 
+    def monitor(self, bot, update, job_queue):
+        self.logger.info('/monitor issued by "%s"', update.message.from_user.id)
+        update.message.reply_text("Monitor started.")
+        t = 0
+        for host in self.miner_list():
+            t += 1
+            n = "%s_monitor" % host['name']
+            host['check_count'] = 0
+            job_queue.run_repeating(self.host_monitor, definitions.CHECK_INTERVAL, context=host, name=n)
+
+    def host_monitor(self, bot, job):
+        job.interval = definitions.CHECK_INTERVAL
+        #t = "Monitor %s for %s" % (job.name, job.context['name'])
+        #bot.send_message(chat_id=self.god,text=t)
+        status = checks.host_status(job.context['name'])
+        if status == definitions.NMAP_UNKN:
+            t = "🌥 - NMAP_UNKN status for %s" % job.name
+            bot.send_message(chat_id=self.god,text=t)
+        elif status == definitions.NMAP_DOWN:
+            if job.context['check_count'] == definitions.NMAP_COUNT:
+                t = "🌧 - Monitor %s reported NMAP_DOWN %s times, restarting..." % (job.name,
+                                                                                    definitions.NMAP_COUNT)
+                bot.send_message(chat_id=self.god,text=t)
+                stat = self.controller.reboot(job.context['name'])
+                job.context['check_count'] = 0
+                t = "Done, controller exited: %s " % definitions.A_STATUS[stat]
+                bot.send_message(chat_id=self.god,text=t)
+                t = "Waiting for boot time..."
+                bot.send_message(chat_id=self.god,text=t)
+                job.interval = definitions.BOOT_TIME
+            else:
+                job.context['check_count'] += 1
+        else:
+            pass
+
+
+    def demonitor(self, bot, update, job_queue):
+        self.logger.info('/demonitor issued by "%s"', update.message.from_user.id)
+        update.message.reply_text("\nStopping monitor jobs...")
+        for job in job_queue.jobs():
+            job.enabled = False
+            job.schedule_removal()
+        update.message.reply_text("\nDone")
+
     def halt_handler(self, sig, frame):
         print("CTRL+C pressed., stopping %s" % self.config['bot_info']['name'])
         sys.exit(0)
@@ -110,6 +153,15 @@ class MineBot(object):
         """Log Errors caused by Updates."""
         logger.warning('Update "%s" caused error "%s"', update, context.error)
 
+    def miner_list(self):
+        hosts = aux.load_hosts()
+        miners = []
+        for host in hosts.keys():
+            if aux.does_match(host, definitions.IS_MINER):
+                hosts[host]['name'] = host
+                miners.append(hosts[host])
+        return miners
+
 def main():
     minebot = MineBot(definitions.CONFIG_FILE, definitions.PRIVATE_FILE)
     updater = Updater(token=minebot.credentials['credentials']['token'],user_sig_handler=minebot.halt_handler)
@@ -117,7 +169,9 @@ def main():
 
     dp.add_handler(CommandHandler("checkall", minebot.checkall))
     dp.add_handler(CommandHandler("check", minebot.check, pass_args=True))
+    dp.add_handler(CommandHandler("demonitor", minebot.demonitor, pass_job_queue=True))
     dp.add_handler(CommandHandler("help", minebot.help))
+    dp.add_handler(CommandHandler("monitor", minebot.monitor, pass_job_queue=True))
     dp.add_handler(CommandHandler("poweroff", minebot.poweroff, pass_args=True))
     dp.add_handler(CommandHandler("poweron", minebot.poweron, pass_args=True))
     dp.add_handler(CommandHandler("remine", minebot.remine))

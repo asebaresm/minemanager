@@ -53,6 +53,10 @@ def load_hosts():
     priv = load_yaml(definitions.PRIVATE_FILE)
     return priv['hosts']
 
+def load_god():
+    priv = load_yaml(definitions.PRIVATE_FILE)
+    return priv['mod']['god']
+
 def store_users(users):
     priv = load_yaml(definitions.PRIVATE_FILE)
     priv['mod']['users'] = users

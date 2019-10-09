@@ -28,8 +28,7 @@ class RelayBoard:
         GPIO.setup(IN_CHN_LIST, GPIO.IN)
 
     def powercycle(self, relay):
-        if not self.poweroff(relay):
-            return False
+        self.poweroff(relay)
         # wait 0.5s to end power-off
         time.sleep(3)
         if not self.poweron(relay):
