@@ -65,6 +65,16 @@ class RelayBoard:
         GPIO.output(RELAYS[relay]['out'], GPIO.HIGH)
         return True
 
+    def async_powercycle(self, relay):
+        GPIO.output(RELAYS[relay]['out'], GPIO.LOW)
+        time.sleep(5)
+        GPIO.output(RELAYS[relay]['out'], GPIO.HIGH)
+        time.sleep(5)
+        GPIO.output(RELAYS[relay]['out'], GPIO.LOW)
+        time.sleep(1)
+        GPIO.output(RELAYS[relay]['out'], GPIO.HIGH)
+        return True
+
 def main():
     time.sleep(2)
     print("\nGO!")

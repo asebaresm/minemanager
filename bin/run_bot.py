@@ -50,7 +50,7 @@ class MineBot(object):
     def remine(self, bot, update):
         self.logger.info('/remine issued by "%s"', update.message.from_user.id)
         update.message.reply_text("\nRebooting all miners")
-        for host in self.miner_list():
+        for host in self.monitor_list():
             reply = "\nRestarting %s..." % host['name']
             update.message.reply_text(reply)
             self.controller.reboot(host['name'])
@@ -105,7 +105,7 @@ class MineBot(object):
         self.logger.info('/monitor issued by "%s"', update.message.from_user.id)
         update.message.reply_text("Monitor started.")
         t = 0
-        for host in self.miner_list():
+        for host in self.monitor_list():
             t += 1
             n = "%s_monitor" % host['name']
             host['check_count'] = 0
@@ -153,11 +153,11 @@ class MineBot(object):
         """Log Errors caused by Updates."""
         logger.warning('Update "%s" caused error "%s"', update, context.error)
 
-    def miner_list(self):
+    def monitor_list(self):
         hosts = aux.load_hosts()
         miners = []
         for host in hosts.keys():
-            if aux.does_match(host, definitions.IS_MINER):
+            if hosts[host]['monitor']:
                 hosts[host]['name'] = host
                 miners.append(hosts[host])
         return miners

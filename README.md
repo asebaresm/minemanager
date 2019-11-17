@@ -4,7 +4,7 @@ A bot to manage miners/PCs/machines
 
 ## Backlog
 * 🚩     Update relay mappings
-* 🚩🚩   Modify function `miner_list()`, use yaml field insteado of name match
+* 🚩🚩   Modify function `miner_list()`, use yaml field instead of name match
 * 🚩🚩🚩 Change restart arqo: RESET -> PWR BUTTON on timer
 * 🚩🚩   `/poweroff` has default value "all" with no args
 * 🚩🚩   `/poweron` has default value "all" with no args (powers on in sequence)
